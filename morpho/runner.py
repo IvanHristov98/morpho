@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
-import numpy as np
-import matplotlib.pyplot as plt
-import cv2
-
-from morpho.cmd.config import Config
+import morpho.cmd as cmd
 
 
 def _main():
-    cfg = Config()
-
-    print("dasda")
+    cfg = cmd.Config()
+    cmd.loop(cfg)
 
 
 if __name__ == "__main__":
