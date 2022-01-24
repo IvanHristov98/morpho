@@ -22,6 +22,12 @@ class Reconstructor:
         if self._cfg.strategy == Strategy.DILATION and self._cfg.model == ColorModel.BOOL:
             return self._reconstruct_binary_img_through_dilation(mask, marker)
 
+        if self._cfg.strategy == Strategy.EROSION and self._cfg.model == ColorModel.GRAYSCALE:
+            return self._reconstruct_grayscale_img_through_erosion(mask, marker)
+
+        if self._cfg.strategy == Strategy.DILATION and self._cfg.model == ColorModel.GRAYSCALE:
+            return self._reconstruct_grayscale_img_through_dilation(mask, marker)
+
         return None
 
     def _reconstruct_binary_img_through_erosion(self, mask: np.ndarray, marker: np.ndarray) -> np.ndarray:
@@ -29,16 +35,30 @@ class Reconstructor:
             eroded_prev = cv2.erode(prev, kernel)
             return cv2.bitwise_or(eroded_prev, mask)
         
-        return self._reconstruct_binary_img(mask, marker, op)
+        return self._reconstruct_img(mask, marker, op)
 
     def _reconstruct_binary_img_through_dilation(self, mask: np.ndarray, marker: np.ndarray) -> np.ndarray:
         def op(mask: np.ndarray, prev: np.ndarray, kernel: np.ndarray) -> np.ndarray:
             dilated_prev = cv2.dilate(prev, kernel)
             return cv2.bitwise_and(dilated_prev, mask)
         
-        return self._reconstruct_binary_img(mask, marker, op)
+        return self._reconstruct_img(mask, marker, op)
 
-    def _reconstruct_binary_img(self, mask: np.ndarray, marker: np.ndarray, op: Callable[[np.ndarray, np.ndarray, np.ndarray], np.ndarray]) -> np.ndarray:
+    def _reconstruct_grayscale_img_through_erosion(self, mask: np.ndarray, marker: np.ndarray) -> np.ndarray:
+        def op(mask: np.ndarray, prev: np.ndarray, kernel: np.ndarray) -> np.ndarray:
+            eroded_prev = cv2.erode(prev, kernel)
+            return cv2.max(eroded_prev, mask)
+        
+        return self._reconstruct_img(mask, marker, op)
+
+    def _reconstruct_grayscale_img_through_dilation(self, mask: np.ndarray, marker: np.ndarray) -> np.ndarray:
+        def op(mask: np.ndarray, prev: np.ndarray, kernel: np.ndarray) -> np.ndarray:
+            dilated_prev = cv2.dilate(prev, kernel)
+            return cv2.min(dilated_prev, mask)
+
+        return self._reconstruct_img(mask, marker, op)
+
+    def _reconstruct_img(self, mask: np.ndarray, marker: np.ndarray, op: Callable[[np.ndarray, np.ndarray, np.ndarray], np.ndarray]) -> np.ndarray:
         kernel = self._kernel()
         prev = marker
         

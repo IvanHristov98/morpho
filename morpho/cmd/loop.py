@@ -21,7 +21,7 @@ def loop(cfg: Config) -> None:
     reconstructor = Reconstructor(cfg.rec_cfg)
     
     img_dir = Path(os.environ["IMG_DIR"])
-    dots_path = Path(img_dir, "dots_and_squares.png")
+    dots_path = Path(img_dir, "colibri.png")
     
     mask = cv2.imread(str(dots_path), cv2.IMREAD_GRAYSCALE)
     marker = init_marker(mask, cfg.rec_cfg.strategy)
