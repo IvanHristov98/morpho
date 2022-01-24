@@ -17,23 +17,21 @@ class Point(NamedTuple):
     y: int
 
 
-def sample(img_path: Path) -> List[Point]:
+def sample(mask: np.ndarray) -> List[Point]:
     print("Click on pixels from the image.")
     print(f"Stop selection by pressing '{_QUIT_KEY}' or '{_QUIT_KEY.upper()}'.")
-
-    img = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)
     
     points = []
     point_collector = _point_collector(points)
     
-    window_width, window_height = _window_size(img)
+    window_width, window_height = _window_size(mask)
     
     cv2.namedWindow(_WINDOW_NAME, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(_WINDOW_NAME, window_width, window_height)
 
     cv2.setMouseCallback(_WINDOW_NAME, point_collector)
     
-    cv2.imshow(_WINDOW_NAME, img)
+    cv2.imshow(_WINDOW_NAME, mask)
     _listen_for_quit()
 
     cv2.destroyAllWindows()
@@ -46,6 +44,7 @@ def _point_collector(points: List[Point]) -> Callable[[int, int, int, Any, Any],
         if event != _LEFT_CLICK:
             return
         
+        # Displacing them due to cv2 specifics.
         points.append(Point(x, y))
     
     return collect_points

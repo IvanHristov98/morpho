@@ -1,1 +1,1 @@
-from morpho.marker.sample import Point, sample # noqa
+from morpho.marker.marker import init_marker # noqa
