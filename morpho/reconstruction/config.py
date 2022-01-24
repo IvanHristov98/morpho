@@ -2,13 +2,13 @@ from enum import Enum
 
 
 class ColorModel(Enum):
-    BOOL = 0
-    GRAYSCALE = 1
+    BOOL = "binary"
+    GRAYSCALE = "grayscale"
 
 
 class Strategy(Enum):
-    EROSION = 0
-    DILATION = 1
+    EROSION = "erosion"
+    DILATION = "dilation"
 
 
 class Config:
