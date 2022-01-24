@@ -21,9 +21,9 @@ def init_marker(mask: np.ndarray, strategy: Strategy) -> np.ndarray:
 
 def _background_color(strategy: Strategy) -> int:
     if strategy == Strategy.EROSION:
-        return _BLACK
+        return _WHITE
     
-    return _WHITE
+    return _BLACK
 
 
 def _mark_pixels(mask: np.ndarray, marker: np.ndarray) -> np.ndarray:

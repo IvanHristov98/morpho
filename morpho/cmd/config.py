@@ -1,16 +1,8 @@
-from morpho.reconstruction.factory import ColorModel, Strategy
+from morpho.reconstruction import Config as RecConfig
 
 
 class Config:
-    model: ColorModel
-    strategy: Strategy
+    rec_cfg: RecConfig
     
     def __init__(self) -> None:
-        self.model = ColorModel.BOOL
-        self.strategy = Strategy.EROSION
-
-    def with_model(self, model: ColorModel):
-        self.model = model
-
-    def with_strategy(self, strategy: Strategy):
-        self.strategy = strategy
+        self.rec_cfg = RecConfig()
