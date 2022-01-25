@@ -75,7 +75,6 @@ def _reconstruct_colorful_img(cfg: Config) -> None:
     blurred_mask_bgr = cv2.GaussianBlur(mask_bgr, ksize=(3, 3), sigmaX=0, sigmaY=0, borderType=cv2.BORDER_DEFAULT)
 
     mask_grayscale = cv2.cvtColor(blurred_mask_bgr, cv2.COLOR_BGR2GRAY)
-    mask_grayscale = cv2.equalizeHist(mask_grayscale)
     
     laplacian_mask = cv2.Laplacian(mask_grayscale, cv2.CV_16S, ksize=3)
     laplacian_mask = cv2.convertScaleAbs(laplacian_mask)

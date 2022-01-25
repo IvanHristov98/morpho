@@ -16,9 +16,6 @@ class Reconstructor:
         self._cfg = cfg
 
     def reconstruct(self, mask: np.ndarray, marker: np.ndarray) -> np.ndarray:
-        if self._cfg.model == ColorModel.RGB:
-            return self._reconstruct_rgb_img(mask, marker)
-    
         if self._cfg.strategy == Strategy.EROSION and self._cfg.model == ColorModel.BOOL:
             return self._reconstruct_binary_img_through_erosion(mask, marker)
 
@@ -32,15 +29,6 @@ class Reconstructor:
             return self._reconstruct_grayscale_img_through_dilation(mask, marker)
 
         return None
-
-    def _reconstruct_rgb_img(self, mask: np.ndarray, marker: np.ndarray) -> np.ndarray:
-        laplacian_img = np.ndarray(shape=mask.shape, dtype=np.uint8)
-        cv2.Laplacian(mask, cv2.CV_16S, laplacian_img)
-        
-        cv2.imshow(laplacian_img)
-        cv2.waitKey(0)
-        
-        return mask
 
     def _reconstruct_binary_img_through_erosion(self, mask: np.ndarray, marker: np.ndarray) -> np.ndarray:
         def op(mask: np.ndarray, prev: np.ndarray, kernel: np.ndarray) -> np.ndarray:
