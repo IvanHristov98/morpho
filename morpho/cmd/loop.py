@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import numpy as np
 import cv2
 
 from morpho.cmd.config import Config
@@ -9,7 +10,8 @@ from morpho.reconstruction import Reconstructor, Strategy, ColorModel
 
 
 _RESULT_WINDOW = 'reconstructed-image'
-_RECONSTRUCT_CMD = 'r'
+_RECONSTRUCT_BINARY_CMD = 'rb'
+_RECONSTRUCT_COLOR_CMD = 'rc'
 _MODEL_CMD = 'm'
 _STRATEGY_CMD = 's'
 _BINARY_MODEL = 'b'
@@ -24,7 +26,8 @@ def loop(cfg: Config) -> None:
         cmd_acronym = input("Enter cmd> ")
         
         switch = {
-            _RECONSTRUCT_CMD: _reconstruct,
+            _RECONSTRUCT_BINARY_CMD: _reconstruct,
+            _RECONSTRUCT_COLOR_CMD: _reconstruct_colorful_img,
             _MODEL_CMD: _switch_model,
             _STRATEGY_CMD: _switch_strategy,
         }
@@ -36,7 +39,8 @@ def loop(cfg: Config) -> None:
 def _print_main_menu(cfg: Config) -> None:
     print("==== \033[0;32mMain Menu\033[0m ====")
     print("")
-    print(f"\033[0;33mreconstruct image\033[0m (Enter {_RECONSTRUCT_CMD})")
+    print(f"\033[0;33mreconstruct grayscale image\033[0m (Enter {_RECONSTRUCT_BINARY_CMD})")
+    print(f"\033[0;33mreconstruct rgb image\033[0m (Enter {_RECONSTRUCT_COLOR_CMD})")
     print(f"\033[0;33mchange color model\033[0m (Enter {_MODEL_CMD})")
     print(f"\033[0;33mchange strategy\033[0m (Enter {_STRATEGY_CMD})")
     print("")
@@ -46,13 +50,12 @@ def _print_main_menu(cfg: Config) -> None:
 
 
 def _reconstruct(cfg: Config) -> None:
-    reconstructor = Reconstructor(cfg.rec_cfg)
-    
     img_path = input("Enter img path> ")
     
     mask = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)
     marker = init_marker(mask, cfg.rec_cfg.strategy)
     
+    reconstructor = Reconstructor(cfg.rec_cfg)
     rec_img = reconstructor.reconstruct(mask, marker)
     
     print("Press any key to continue (without closing the window)...")
@@ -60,6 +63,49 @@ def _reconstruct(cfg: Config) -> None:
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     
+    print()
+
+
+def _reconstruct_colorful_img(cfg: Config) -> None:
+    img_path = input("Enter img path> ")
+    
+    mask_bgr = cv2.imread(str(img_path), cv2.IMREAD_COLOR)
+    
+    # Reduce noise by blurring.
+    blurred_mask_bgr = cv2.GaussianBlur(mask_bgr, ksize=(3, 3), sigmaX=0, sigmaY=0, borderType=cv2.BORDER_DEFAULT)
+
+    mask_grayscale = cv2.cvtColor(blurred_mask_bgr, cv2.COLOR_BGR2GRAY)
+    mask_grayscale = cv2.equalizeHist(mask_grayscale)
+    
+    laplacian_mask = cv2.Laplacian(mask_grayscale, cv2.CV_16S, ksize=3)
+    laplacian_mask = cv2.convertScaleAbs(laplacian_mask)
+    (_, laplacian_mask) = cv2.threshold(laplacian_mask, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    
+    marker = init_marker(laplacian_mask, Strategy.EROSION)
+    
+    reconstructor = Reconstructor(cfg.rec_cfg)
+    rec_img = reconstructor.reconstruct(laplacian_mask, marker)
+    rec_img = (255 - rec_img)
+
+    b, g, r = cv2.split(mask_bgr)
+    
+    rec_img_b = cv2.min(b, rec_img)
+    rec_img_g = cv2.min(g, rec_img)
+    rec_img_r = cv2.min(r, rec_img)
+    
+    rec_img_bgr = np.ndarray(shape=mask_bgr.shape, dtype=np.uint8)
+    
+    for i in range(rec_img_bgr.shape[0]):
+        for j in range(rec_img_bgr.shape[1]):
+            rec_img_bgr[i][j][0] = rec_img_b[i][j]
+            rec_img_bgr[i][j][1] = rec_img_g[i][j]
+            rec_img_bgr[i][j][2] = rec_img_r[i][j]
+
+    # cv2.imshow('s', rec_img)
+    cv2.imshow('', rec_img_bgr)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
     print()
 
 

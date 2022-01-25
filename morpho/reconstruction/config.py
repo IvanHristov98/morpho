@@ -4,6 +4,7 @@ from enum import Enum
 class ColorModel(Enum):
     BOOL = "binary"
     GRAYSCALE = "grayscale"
+    RGB = "RGB"
 
 
 class Strategy(Enum):

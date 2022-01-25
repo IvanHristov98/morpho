@@ -1,6 +1,7 @@
 import numpy as np
+import cv2
 
-from morpho.marker.sample import sample, Point
+from morpho.marker.sample import sample
 from morpho.reconstruction import Strategy
 
 
